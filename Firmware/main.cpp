@@ -8,8 +8,8 @@
 typedef uint8_t bright_t;
 typedef uint8_t time_t;
 
-const bright_t maxBrightness = 250;
-const time_t maxPause = 100;
+const bright_t maxBrightness = 255;
+const time_t maxPause = 150;
 
 const uint8_t numChannels = 8;
 static volatile uint8_t *ledPORTs[] = {&PORTB, &PORTA, &PORTA, &PORTA, &PORTA, &PORTA, &PORTB, &PORTB};
@@ -31,8 +31,8 @@ int main()
 
   // Setup the Timer0
   cli();
-  // F_CPU / (127 * 1)/255 ~= 247 Hz
-  OCR0A = F_CPU / ( 500* 1 ) /255;
+  // F_CPU / (62 * 1)/255 ~= 247 Hz
+  OCR0A = F_CPU / ( 200 * 1 ) / 255;
   // CTC
   TCCR0A |= (1 << WGM01);
   // no prescaler
@@ -43,8 +43,8 @@ int main()
   sei();
 
   while (1)
-  {
     //it's time to update the led state
+  {
     for (uint8_t channel = 0; channel < numChannels; channel++)
     {
       if (pauseDuration[channel] == 0)
@@ -76,7 +76,7 @@ int main()
         pauseDuration[channel] -= 1;
       }
     }
-  _delay_ms(5);
+      _delay_ms(10);
   }
 
 }
@@ -90,11 +90,11 @@ ISR(TIM0_COMPA_vect)
   {
     if (pwmStep < currentBrightness[channel])
     {
-      *(ledPORTs[channel]) |= (1 << ledPINs[channel]);
+      *(ledPORTs[channel]) &= ~(1 << ledPINs[channel]);
     }
     else
     {
-      *(ledPORTs[channel]) &= ~(1 << ledPINs[channel]);
+      *(ledPORTs[channel]) |= (1 << ledPINs[channel]);
     }
   }
 
